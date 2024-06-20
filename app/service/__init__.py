@@ -38,4 +38,4 @@ def thread_loop():
 thread = threading.Thread(target=thread_loop)
 thread.setDaemon(True)
 thread.start()
-print(f"Sync task{i} is running now.")
+print(f"Sync task is running now.")
