@@ -20,7 +20,7 @@ class __Config:
     def __init__(self):
         load_dotenv()
 
-        self.debug = bool(os.getenv("DEBUG", "True"))
+        self.debug = bool(os.getenv("DEBUG", "True") == "True")
 
         self.open_ai_base_url = os.getenv("OPEN_AI_BASE_URL", "https://api.openai.com/v1")
         self.open_ai_api = os.getenv("OPEN_AI_API", "")
