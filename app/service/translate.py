@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import time
 from typing import List
 
 from app.forum.get import get_topic_and_post_ids, get_post, get_topics
@@ -211,9 +212,14 @@ def save_progress(session: Session, sync_progress, topic):
     session.merge(sync_progress)
 
 
-def translate_task():
+def translate_task(wait_when_none: int = 2):
     sync_progress = query_progress_and_update_state_to_translating()
     print(f"sync_progress: {sync_progress}")
+
+    if sync_progress is None:
+        if wait_when_none != 0:
+            time.sleep(wait_when_none)
+        return
 
     start_time = datetime.now()
     print(f"[{start_time.strftime('%Y-%m-%d %H:%M:%S')}] get {sync_progress}")
