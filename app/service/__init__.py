@@ -19,22 +19,22 @@ import threading
 sleep_time = 60
 
 
-def thread_loop():
-    while True:
-        try:
-            incremental_loop()
-        except Exception as e:
-            print(f"[Error] translate_or_update_first_page() {e} ")
-
-        if sleep_time != 0:
-            time.sleep(sleep_time)
-
-
-def incremental_loop():
-    translate_or_update_first_page()
-
-
-thread = threading.Thread(target=thread_loop)
-thread.setDaemon(True)
-thread.start()
-print(f"Sync task is running now.")
+# def thread_loop():
+#     while True:
+#         try:
+#             incremental_loop()
+#         except Exception as e:
+#             print(f"[Error] translate_or_update_first_page() {e} ")
+#
+#         if sleep_time != 0:
+#             time.sleep(sleep_time)
+#
+#
+# def incremental_loop():
+#     translate_or_update_first_page()
+#
+#
+# thread = threading.Thread(target=thread_loop)
+# thread.setDaemon(True)
+# thread.start()
+# print(f"Sync task is running now.")
