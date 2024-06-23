@@ -49,6 +49,13 @@ def get_post(post_id: int) -> CnPosts:
     return dict_to_post(post)
 
 
+def get_recent_updated_topics(page: int = 0) -> List[CnTopics]:
+    r = requests.get(f"https://asktug.com/latest.json?&page={page}")
+    topics = r.json()['topic_list']['topics']
+
+    return [dict_to_topic(topic) for topic in topics]
+
+
 def get_topics(page: int) -> List[CnTopics]:
     r = requests.get(f"https://asktug.com/latest.json?order=created&page={page}")
     topics = r.json()['topic_list']['topics']
@@ -85,7 +92,8 @@ def get_and_save_page_sync_progress(page: int, earliest: datetime) -> bool:
 
     # we use create time as the order to query the topics by page
     topics = get_topics(page)
-    topics = list(filter(lambda t: datetime.datetime.strptime(t.created_at, '%Y-%m-%dT%H:%M:%S.%fZ') > earliest, topics))
+    topics = list(
+        filter(lambda t: datetime.datetime.strptime(t.created_at, '%Y-%m-%dT%H:%M:%S.%fZ') > earliest, topics))
     save_page_topic_ids(topics)
     print(f"Got {len(topics)} topics in page {page}!")
     return len(topics) != 0

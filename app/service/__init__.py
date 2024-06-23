@@ -13,29 +13,28 @@
 # limitations under the License.
 import time
 
-from app.service.translate import translate_task, task_error
+from app.service.translate import translate_task, task_error, translate_or_update_first_page
 import threading
 
-sleep_time = 0
+sleep_time = 60
 
 
-def thread_loop():
-    while True:
-        progress = None
-        try:
-            progress = translate_task()
-        except Exception as e:
-            print(f"[Error] translate_task() {progress}: {e} ")
-            try:
-                task_error(progress)
-            except Exception as e:
-                print(f"[Error] task_error() {progress}: {e} ")
-
-        if sleep_time != 0:
-            time.sleep(sleep_time)
-
-
-thread = threading.Thread(target=thread_loop)
-thread.setDaemon(True)
-thread.start()
-print(f"Sync task is running now.")
+# def thread_loop():
+#     while True:
+#         try:
+#             incremental_loop()
+#         except Exception as e:
+#             print(f"[Error] translate_or_update_first_page() {e} ")
+#
+#         if sleep_time != 0:
+#             time.sleep(sleep_time)
+#
+#
+# def incremental_loop():
+#     translate_or_update_first_page()
+#
+#
+# thread = threading.Thread(target=thread_loop)
+# thread.setDaemon(True)
+# thread.start()
+# print(f"Sync task is running now.")

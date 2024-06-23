@@ -14,7 +14,7 @@
 import time
 from typing import List
 
-from app.forum.get import get_topic_and_post_ids, get_post, get_topics
+from app.forum.get import get_topic_and_post_ids, get_post, get_recent_updated_topics
 from app.forum.create import create_post, create_topic, update_post, update_topic, client
 from enum import Enum
 from app.db import db_query, db_exec, engine
@@ -231,3 +231,10 @@ def translate_task(wait_when_none: int = 2):
     print(f"[{delta.seconds}s] merged {sync_progress}")
 
     return sync_progress
+
+
+def translate_or_update_first_page(page: int = 0):
+    topics = get_recent_updated_topics(page)
+    for topic in topics:
+        topic_id = topic.id
+        translate_topic(topic_id=topic_id)
