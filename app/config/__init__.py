@@ -21,6 +21,7 @@ class __Config:
         load_dotenv()
 
         self.debug = bool(os.getenv("DEBUG", "True") == "True")
+        self.log_path = os.getenv("LOG_PATH", "./transforum.log")
         self.sleep_time = int(os.getenv("SLEEP_TIME", "30"))
 
         self.open_ai_base_url = os.getenv("OPEN_AI_BASE_URL", "https://api.openai.com/v1")

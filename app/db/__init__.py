@@ -16,6 +16,9 @@ from sqlalchemy import URL, create_engine
 from app.config import conf
 from sqlalchemy.orm import Session
 from typing import Callable, Any
+from app.log import getLogger
+
+logger = getLogger(__name__)
 
 
 def get_db_url():
@@ -54,7 +57,7 @@ def db_exec(func: Callable[[Session], None]):
                 session.commit()
             except Exception as e:
                 session.rollback()
-                print(f"Exec and an error occurred: {e}")
+                logger.error(f"Exec and an error occurred: {e}")
                 raise
     return wrapper
 
@@ -68,7 +71,7 @@ def db_query(func: Callable[[Session], Any]):
                 return result
             except Exception as e:
                 session.rollback()
-                print(f"Query and an error occurred: {e}")
+                logger.error(f"Query and an error occurred: {e}")
                 raise
     return wrapper
 
