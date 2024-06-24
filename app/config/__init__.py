@@ -24,6 +24,8 @@ class __Config:
         self.log_path = os.getenv("LOG_PATH", "./transforum.log")
         self.sleep_time = int(os.getenv("SLEEP_TIME", "30"))
 
+        self.sentry_dsn = os.getenv("SENTRY_DSN")
+
         self.open_ai_base_url = os.getenv("OPEN_AI_BASE_URL", "https://api.openai.com/v1")
         self.open_ai_api = os.getenv("OPEN_AI_API", "")
 
