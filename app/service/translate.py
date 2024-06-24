@@ -25,10 +25,9 @@ from lxml import etree
 from datetime import datetime
 from retrying import retry
 import re
-import logging
+from app.log import getLogger
 
-
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 
 class Operator(Enum):
@@ -42,7 +41,7 @@ def translate_topic(topic_id: int):
     topic, post_ids = get_topic_and_post_ids(topic_id)
     topic_op = translate_and_save_topic(topic)
 
-    print(f"Start to deal with topic {topic.id}")
+    logger.info(f"Start to deal with topic {topic.id}")
 
     if topic_op == Operator.Create:
         posts = [get_post(post_id) for post_id in post_ids]
@@ -67,7 +66,7 @@ def translate_topic(topic_id: int):
                 if posts[i].accepted_answer:
                     client.solve_solution(posts[i].en_id)
 
-        print(f"Create topic {topic.id} successfully, en id: {topic.en_id}")
+        logger.info(f"Create topic {topic.id} successfully, en id: {topic.en_id}")
     else:
         if topic_op == Operator.Update:
             update_topic(topic)
@@ -80,11 +79,11 @@ def translate_topic(topic_id: int):
                 update_post(topic, posts[i])
             elif post_ops[i] == Operator.Create:
                 post_result = create_post(topic, posts[i])
-                print(f"post_result: {post_result}")
+                logger.debug(f"post_result: {post_result}")
                 posts[i].en_id = post_result['id']
                 update_obj(posts[i])
 
-        print(f"Update topic {topic.id} successfully")
+        logger.info(f"Update topic {topic.id} successfully")
 
     return topic
 
@@ -166,7 +165,7 @@ def find_link_from_cooked(cooked: str, sha: str) -> str:
         if len(src) == 0:
             return ""
         else:
-            print(str(src[0]))
+            logger.debug(str(src[0]))
             return str(src[0])
 
     src_set = str(src_sets[0])
@@ -200,7 +199,7 @@ def query_progress_and_update_state_to_translating(session: Session):
         .order_by(SyncProgress.cn_created_at.desc()).first()
 
     if progress is None:
-        print("All synchronized")
+        logger.debug("All synchronized")
         return None
 
     progress.translate_state = 1
@@ -219,7 +218,7 @@ def save_progress(session: Session, sync_progress, topic):
 
 def translate_task(wait_when_none: int = 2):
     sync_progress = query_progress_and_update_state_to_translating()
-    print(f"sync_progress: {sync_progress}")
+    logger.info(f"sync_progress: {sync_progress}")
 
     if sync_progress is None:
         if wait_when_none != 0:
@@ -227,13 +226,13 @@ def translate_task(wait_when_none: int = 2):
         return
 
     start_time = datetime.now()
-    print(f"[{start_time.strftime('%Y-%m-%d %H:%M:%S')}] get {sync_progress}")
+    logger.info(f"get {sync_progress}")
 
     topic = translate_topic(sync_progress.cn_topic_id)
     save_progress(sync_progress, topic)
 
     delta = datetime.now() - start_time
-    print(f"[{delta.seconds}s] merged {sync_progress}")
+    logger.info(f"[{delta.seconds}s] merged {sync_progress}")
 
     return sync_progress
 

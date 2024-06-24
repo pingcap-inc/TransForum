@@ -20,6 +20,9 @@ from app.db.gen_instances import CnTopics, CnPosts, SyncProgress
 from app.db import db_exec
 from dataclasses import fields
 from retrying import retry
+from app.log import getLogger
+
+logger = getLogger(__name__)
 
 
 def get_topic_and_post_ids(topic_id: int) -> (CnTopics, List[int]):
@@ -95,7 +98,9 @@ def get_and_save_page_sync_progress(page: int, earliest: datetime) -> bool:
     topics = list(
         filter(lambda t: datetime.datetime.strptime(t.created_at, '%Y-%m-%dT%H:%M:%S.%fZ') > earliest, topics))
     save_page_topic_ids(topics)
-    print(f"Got {len(topics)} topics in page {page}!")
+
+    logger.info(f"Got {len(topics)} topics in page {page}!")
+
     return len(topics) != 0
 
 
