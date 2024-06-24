@@ -3,7 +3,7 @@ CREATE TABLE cn_posts (
   `username` varchar(255),
   `avatar_template` varchar(255),
   `created_at` datetime,
-  `cooked` text,
+  `cooked` longtext,
   `post_number` int,
   `post_type` int,
   `updated_at` datetime,

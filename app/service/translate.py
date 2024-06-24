@@ -23,6 +23,7 @@ from app.db.gen_instances import CnTopics, CnPosts, SyncProgress
 from app.models.openai_client import translate, translate_title
 from lxml import etree
 from datetime import datetime
+from retrying import retry
 import re
 import logging
 
@@ -36,9 +37,12 @@ class Operator(Enum):
     Create = 3
 
 
+@retry(stop_max_attempt_number=3, wait_fixed=2000)
 def translate_topic(topic_id: int):
     topic, post_ids = get_topic_and_post_ids(topic_id)
     topic_op = translate_and_save_topic(topic)
+
+    print(f"Start to deal with topic {topic.id}")
 
     if topic_op == Operator.Create:
         posts = [get_post(post_id) for post_id in post_ids]
@@ -63,7 +67,7 @@ def translate_topic(topic_id: int):
                 if posts[i].accepted_answer:
                     client.solve_solution(posts[i].en_id)
 
-        print(f"Create topic {topic.id} successfully")
+        print(f"Create topic {topic.id} successfully, en id: {topic.en_id}")
     else:
         if topic_op == Operator.Update:
             update_topic(topic)
@@ -81,8 +85,6 @@ def translate_topic(topic_id: int):
                 update_obj(posts[i])
 
         print(f"Update topic {topic.id} successfully")
-
-    print(f"topic en id: {topic.en_id}")
 
     return topic
 
@@ -117,14 +119,14 @@ def translate_and_save_post(session: Session, post: CnPosts) -> Operator:
 def translate_and_save_topic(session: Session, topic: CnTopics) -> Operator:
     op = Operator.Nothing
     old_topic = session.query(CnTopics).filter(CnTopics.id == topic.id).first()
-    if old_topic is not None:
+    if old_topic is not None and old_topic.en_id is not None and old_topic.en_id != -1:
         return op
 
     # new topic or need to update
     # topic's title should not exceed 255 chars
     topic.translated_title = translate_title(topic.title)
     op = Operator.Create
-    if old_topic is not None:
+    if old_topic is not None and old_topic.en_id != -1:
         topic.en_id = old_topic.en_id
         op = Operator.Update
 
@@ -146,6 +148,9 @@ def change_markdown_pic_to_link(raw: str, cooked: str) -> str:
         image_sha = match.group(2)      # match the SHA of the image
 
         new_url = find_link_from_cooked(cooked, image_sha)
+        if new_url is None or new_url == "":
+            # cannot find the new URL
+            return ""
         if not new_url.startswith("http"):
             new_url = f"https://asktug.com/uploads{new_url}"
         return f'![{description}]({new_url})'
@@ -159,7 +164,7 @@ def find_link_from_cooked(cooked: str, sha: str) -> str:
     if len(src_sets) == 0:
         src = etree.HTML(cooked).xpath(f"//img[@data-base62-sha1='{sha}']/@src")
         if len(src) == 0:
-            raise Exception("Cannot find the picture link")
+            return ""
         else:
             print(str(src[0]))
             return str(src[0])
@@ -235,6 +240,10 @@ def translate_task(wait_when_none: int = 2):
 
 def translate_or_update_first_page(page: int = 0):
     topics = get_recent_updated_topics(page)
+    # from old to new
+    topics.reverse()
     for topic in topics:
         topic_id = topic.id
         translate_topic(topic_id=topic_id)
+
+    return topics
