@@ -16,8 +16,7 @@ import time
 
 from app.service.translate import translate_task, task_error, translate_or_update_first_page
 import threading
-
-sleep_time = 3600
+from app.config import conf
 
 
 def thread_loop():
@@ -27,8 +26,8 @@ def thread_loop():
         except Exception as e:
             print(f"[Error {datetime.datetime.now()}] translate_or_update_first_page() {e}")
 
-        if sleep_time != 0:
-            time.sleep(sleep_time)
+        if conf.sleep_time != 0:
+            time.sleep(conf.sleep_time)
 
 
 def incremental_loop():
