@@ -21,23 +21,23 @@ from app.log import getLogger
 
 logger = getLogger(__name__)
 
-#
-# def thread_loop():
-#     while True:
-#         try:
-#             incremental_loop()
-#         except Exception as e:
-#             logger.error(f"[Error {datetime.datetime.now()}] translate_or_update_first_page() {e}")
-#
-#         if conf.sleep_time != 0:
-#             time.sleep(conf.sleep_time)
-#
-#
-# def incremental_loop():
-#     translate_or_update_first_page()
-#
-#
-# thread = threading.Thread(target=thread_loop)
-# thread.setDaemon(True)
-# thread.start()
-# logger.info(f"Sync task is running now.")
+
+def thread_loop():
+    while True:
+        try:
+            incremental_loop()
+        except Exception as e:
+            logger.error(f"[Error {datetime.datetime.now()}] translate_or_update_first_page() {e}")
+
+        if conf.sleep_time != 0:
+            time.sleep(conf.sleep_time)
+
+
+def incremental_loop():
+    translate_or_update_first_page()
+
+
+thread = threading.Thread(target=thread_loop)
+thread.setDaemon(True)
+thread.start()
+logger.info(f"Sync task is running now.")
