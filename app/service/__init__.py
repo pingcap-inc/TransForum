@@ -11,30 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 import time
 
 from app.service.translate import translate_task, task_error, translate_or_update_first_page
 import threading
 
-sleep_time = 60
+sleep_time = 3600
 
 
-# def thread_loop():
-#     while True:
-#         try:
-#             incremental_loop()
-#         except Exception as e:
-#             print(f"[Error] translate_or_update_first_page() {e} ")
-#
-#         if sleep_time != 0:
-#             time.sleep(sleep_time)
-#
-#
-# def incremental_loop():
-#     translate_or_update_first_page()
-#
-#
-# thread = threading.Thread(target=thread_loop)
-# thread.setDaemon(True)
-# thread.start()
-# print(f"Sync task is running now.")
+def thread_loop():
+    while True:
+        try:
+            incremental_loop()
+        except Exception as e:
+            print(f"[Error {datetime.datetime.now()}] translate_or_update_first_page() {e}")
+
+        if sleep_time != 0:
+            time.sleep(sleep_time)
+
+
+def incremental_loop():
+    translate_or_update_first_page()
+
+
+thread = threading.Thread(target=thread_loop)
+thread.setDaemon(True)
+thread.start()
+print(f"Sync task is running now.")
