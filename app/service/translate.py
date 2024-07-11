@@ -39,7 +39,7 @@ class Operator(Enum):
 @retry(stop_max_attempt_number=3, wait_fixed=2000)
 def translate_topic(topic_id: int):
     topic, post_ids = get_topic_and_post_ids(topic_id)
-    topic_op = translate_and_save_topic(topic)
+    topic_op, old_topic = translate_and_save_topic(topic)
 
     logger.info(f"Start to deal with topic {topic.id}")
 
@@ -70,6 +70,9 @@ def translate_topic(topic_id: int):
     else:
         if topic_op == Operator.Update:
             update_topic(topic)
+        else:
+            # topic operator is nothing, so the old should be the new
+            topic = old_topic
 
         # update posts, no matter the topic will be updated or not
         posts = [get_post(post_id) for post_id in post_ids]
@@ -95,18 +98,19 @@ def update_obj(session: Session, obj):
 
 @db_query
 def translate_and_save_post(session: Session, post: CnPosts) -> Operator:
-    op = Operator.Nothing
     old_post = session.query(CnPosts).filter(CnPosts.id == post.id).first()
 
-    if old_post is not None and compare_date_almost_same(old_post.updated_at, post.updated_at):
-        return op
+    if old_post is not None \
+            and compare_date_almost_same(old_post.updated_at, post.updated_at)\
+            and old_post.en_id != -1:
+        return Operator.Nothing
 
     changed_raw = change_markdown_pic_to_link(post.raw, post.cooked)
     translated = translate(changed_raw)
     post.translated = translated
     op = Operator.Create
 
-    if old_post is not None:
+    if old_post is not None and old_post.en_id != -1:
         post.en_id = old_post.en_id
         op = Operator.Update
 
@@ -115,11 +119,13 @@ def translate_and_save_post(session: Session, post: CnPosts) -> Operator:
 
 
 @db_query
-def translate_and_save_topic(session: Session, topic: CnTopics) -> Operator:
+def translate_and_save_topic(session: Session, topic: CnTopics) -> (Operator, CnTopics):
     op = Operator.Nothing
     old_topic = session.query(CnTopics).filter(CnTopics.id == topic.id).first()
+    session.expunge(old_topic)
+
     if old_topic is not None and old_topic.en_id is not None and old_topic.en_id != -1:
-        return op
+        return op, old_topic
 
     # new topic or need to update
     # topic's title should not exceed 255 chars
@@ -130,7 +136,7 @@ def translate_and_save_topic(session: Session, topic: CnTopics) -> Operator:
         op = Operator.Update
 
     session.merge(topic)
-    return op
+    return op, old_topic
 
 
 def change_markdown_pic_to_link(raw: str, cooked: str) -> str:

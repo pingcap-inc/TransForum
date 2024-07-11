@@ -20,7 +20,7 @@ from app.config import conf
 
 def getLogger(logger_name: str) -> logging.Logger:
     logger = logging.getLogger(logger_name)
-    logLevel = logging.DEBUG if conf.debug else logging.INFO
+    logLevel = logging.getLevelName(conf.log_level)
     logger.setLevel(logLevel)
 
     # Create handlers for logging to the standard output and a file

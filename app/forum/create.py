@@ -15,7 +15,10 @@
 from app.forum.client import DiscourseClientWithPlugins
 from app.config import conf
 from app.db.gen_instances import CnTopics, CnPosts
+from app.log import getLogger
 
+
+logger = getLogger(__name__)
 client = DiscourseClientWithPlugins(
         conf.en_discourse_host,
         api_username=conf.en_discourse_api_username,
@@ -74,6 +77,7 @@ def create_post(topic: CnTopics, post: CnPosts):
     :return: post
     """
 
+    logger.debug(f'Create Post under topic [{topic.en_id}]')
     return client.create_post(
         topic_id=topic.en_id,
         content=post_format(topic, post),
