@@ -13,4 +13,4 @@ ENV PYTHONPATH /app
 
 EXPOSE 4000
 
-CMD ["python", "manage.py", "runserver", "--port", "4000"]
+CMD ["python", "manage.py", "runserver", "--host", "0.0.0.0", "--port", "4000"]
